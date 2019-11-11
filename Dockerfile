@@ -1,4 +1,4 @@
-FROM ubuntu_with_node
+FROM vedant03/ubuntu_with_node:majorimage
 
 RUN mkdir -p /home/node/app/node_modules
 
