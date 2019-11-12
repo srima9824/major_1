@@ -14,7 +14,7 @@
             */
             
             
-          function convert()
+          /*function convert()
             {
 
                   var files = document.getElementById('file').files;
@@ -35,31 +35,44 @@
                 }
                 
             }
+            */
             
+            function tryprint()
+            {
+                console.log("Inside try print");
+                console.log(document.getElementById("passwordtext").value);
+            }
+
              function key2()
             {
               var imgpwd;
                   var files = document.getElementById('file').files;
                 var file = files[0];
                var reader = new FileReader();
-                reader["cust"] = '';
+    
                reader.readAsDataURL(file);
-               reader.onload = function (callback) {
+               reader.onload = function () {
                 
                imgpwd = reader.result;
                   // console.log(reader.cust);
                imgpwd  = imgpwd.replace("data:image/png;base64,", "");
                 imgpwd = imgpwd.substring(0,11);
                    console.log(imgpwd);
+                   //document.getElementById("txt").value = imgpwd;
+                   //------algorithm------
+                   
+                var k1 = key1();
+                createPassword(k1,imgpwd);
                  
                };
-                console.log(imgpwd);
-                //return imgpwd;
+            
+                //console.log(document.getElementById("txt").value);
+            
             }
             
-            function key1()
+            function key1()//gives key 1 as combination of username and weburl
             {
-                console.log("here");
+                console.log("here in key1");
                 var weburl = document.getElementById("weburl").value;
                 var username = document.getElementById("username").value;
                 var dum1 = weburl.indexOf("."); //to get occurence of first '.'
@@ -71,13 +84,96 @@
                 weburl = weburl.substring(0,dum1);
                 //console.log(weburl);
                 var key1 = username + weburl;
-                return key1;
+                var rfence =  railfencecipher(key1);
+                var keyz = formKeySize(rfence);
+                return keyz;
+                
+            }
+            
+            function railfencecipher(str)//raile fence working fine
+            {
+                var len = str.length;
+                var x1,x2,x3="";
+                if(len%2==0)
+                    {
+                        x1 = str.substring(0,len/2);
+                    }
+                else
+                    {
+                        x1 = str.substring(0,(len/2) + 1);
+                    }
+                x2 = str.substring(len/2);
+                console.log("X1 :"+x1);
+                console.log("X2 :"+x2);
+                for(var i=0;i<x1.length;i++)
+                    {
+                        x3 = x3+x1[i]+x2[i];
+                    }
+                console.log("X3 :"+x3);
+                console.log("Strnew = "+formKeySize(x3));
+                return x3;
+            }
+            
+            function formKeySize(str)//working fine
+            {
+                var len = str.length;
+                var strnew = "";
+                if(len == 11)
+                    {
+                        return str;
+                    }
+                else if(len >11)
+                    {
+                        return str.substring(0,11);
+                    }
+                else
+                    {
+                        var left = 11-len;
+                        
+                        var multleft = left/len,modleft = left%len;
+                        for(var i=0;i<multleft;i++)
+                            {
+                                strnew = strnew + str;
+                            }
+                        strnew = strnew +  str.substring(0,modleft);
+                    }
+                return strnew;
+            }
+            
+            function createPassword(key1,key2)
+            {
+                console.log("Key 1 :"+key1+" Key 2 :"+key2);
+                var mergekey = [],mergestr="";
+                for(var i=0;i<11;i++)
+                    {
+                        mergekey[i] = key1.charCodeAt(i) + key2.charCodeAt(i);
+                    }
+                console.log("Merge key : "+mergekey);
+             //statements to convert into ASCII in the following format : LLNUSLNLUSN
+                mergekey[0] = 97 + mergekey[0]%26;
+                mergekey[1] = 97 + mergekey[1]%26;
+                mergekey[5] = 97 + mergekey[5]%26;
+                mergekey[7] = 97 + mergekey[7]%26;
+                mergekey[3] = 65 + mergekey[3]%26;
+                mergekey[8] = 65 + mergekey[8]%26;
+                mergekey[2] = 48 + mergekey[2]%10;
+                mergekey[6] = 48 + mergekey[6]%10;
+                mergekey[10] = 48 + mergekey[10]%10;
+                mergekey[4] = 33 + mergekey[4]%11;
+                mergekey[9] = 33 + mergekey[9]%11;
+                for(var i=0;i<11;i++)
+                    {
+                        mergestr = mergestr + String.fromCharCode(mergekey[i]);
+                    }
+                console.log("Merge pwd final : "+mergestr);
+                document.getElementById("passwordtext").innerHTML = mergestr;
             }
             
             function genKey()
             {
                 //console.log(key1());
                 console.log(key2());
+                console.log(document.x);
             }
         
         </script>
@@ -88,11 +184,16 @@
     <body>
 
         Enter Website's URL: <input type="text" id="weburl"/><br><br>
-        Enter your username: <input type="text" id="username"/><br><br> -->
+        Enter your username: <input type="text" id="username"/><br><br> 
+      
+        <div id="imgTest"></div>
         <input id="file" type="file"/>
+        <textarea  id="passwordtext">
+      </textarea>
       <br/>
       <br/>
-      <button id="button1" onclick="genKey()"/>Evaluate
+      <button id="button1" onclick="key2()"/>Evaluate
+        <button id="button2" onclick="tryprint()"/>Printtext
 
     
     </body>
