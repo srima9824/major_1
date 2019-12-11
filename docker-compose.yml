@@ -1,0 +1,10 @@
+version: "3.3"
+services:
+        webserver:
+                image: nginx
+                volumes:
+                        - "/var/lib/jenkins/workspace/major1/volume:/usr/share/nginx/html"
+                ports:
+                        - "9010:80"
+        app:
+                build: .
