@@ -1,0 +1,27 @@
+---
+# defaults file for jenkins
+java_jdk_version_apt: openjdk-8-jdk
+java_jdk_version_yum: java-1.8.0-openjdk-devel
+JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64/bin/java
+jenkins_home: /var/lib/jenkins
+jenkins_admin_username: admin
+jenkins_admin_password: admin
+jenkins_process_user: jenkins
+jenkins_process_group: "{{ jenkins_process_user }}"
+jenkins_defaults_file_apt: /var/lib/jenkins
+jenkins_defaults_file_yum: /etc/sysconfig/jenkins
+jenkins_http_port: 8080
+jenkins_host_ip: 18.220.244.220
+jenkins_updates_url: "https://updates.jenkins.io"
+jenkins_plugins_install_dependencies: true
+plugins:
+     - git
+     - template-project
+     - pipeline
+     - docker-workflow
+     - template-project
+     - config-file-provider
+     - bitbucket
+     - disk-usage
+     - slack
+     

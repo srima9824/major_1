@@ -1,0 +1,10 @@
+---
+# tasks file for jenkins
+- name: Checking dependencies
+  import_tasks: dependencies.yml
+
+- name: Install Jenkins
+  import_tasks: install_jenkins.yml
+
+- name: Install plugins
+  import_tasks: plugins.yml

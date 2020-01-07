@@ -1,0 +1,38 @@
+---
+- name: Update the software package repository| Redhat
+  yum:
+     name: '*'
+     update_cache: yes
+  when: ansible_os_family|lower == 'redhat'
+
+- name: Update the software package repository| Debian
+  apt:
+     upgrade: yes
+     update_cache: yes
+  when: ansible_os_family|lower == 'debian'
+
+- name: Ensuring dependencies are installed
+  package:
+     name: "{{ item }}"
+     state: latest
+  with_items:
+     - "{{java_jdk_version_apt}}"
+     - git
+     - wget
+  when: ansible_os_family|lower == 'debian'
+
+- name: Ensuring dependencies are installed
+  package:
+     name: "{{ item }}"
+     state: latest
+  with_items:
+     - "{{java_jdk_version_yum}}"
+     - git
+     - wget
+  when: ansible_os_family|lower == 'redhat'
+
+- name: Ensuring JAVA_HOME is set
+  lineinfile:
+     path: /etc/environment
+     line: JAVA_HOME="{{JAVA_HOME}}"
+

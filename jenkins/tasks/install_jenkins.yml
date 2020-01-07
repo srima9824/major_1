@@ -1,0 +1,115 @@
+---
+- name: Add jenkins repository key to system | Debian
+  shell: wget -q -O - https://pkg.jenkins.io/debian/jenkins.io.key | sudo apt-key add -
+  when: ansible_os_family|lower == 'debian'
+
+- name: Add jenkins repository key to system | Redhat
+  shell: wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat/jenkins.repo
+  when: ansible_os_family|lower == 'redhat'
+
+- name: Append the Debian package repository address | Debian
+  template:
+     src: jenkins.list.j2
+     dest: /etc/apt/sources.list.d/jenkins.list
+  when: ansible_os_family|lower == 'debian'
+
+- name: Import the verification key using RPM | Redhat
+  rpm_key:
+     key: http://pkg.jenkins-ci.org/redhat/jenkins-ci.org.key
+     state: present
+  when: ansible_os_family|lower == 'redhat'
+
+- name: Update the software package repository| Redhat
+  yum:
+     name: '*'
+     update_cache: yes
+  when: ansible_os_family|lower == 'redhat'
+
+- name: Update the software package repository| Debian
+  apt:
+     upgrade: yes
+     update_cache: yes
+  when: ansible_os_family|lower == 'debian'
+
+- name: Install Jenkins
+  package:
+     name: jenkins
+     state: latest
+
+- name: Set Jenkins JAVA_ARGS
+  lineinfile:
+    dest: /etc/default/jenkins
+    insertbefore: "^JENKINS_ARGS.*"
+    line: "JAVA_ARGS=\"-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false\""
+  register: jenkins_defaults
+  when: ansible_os_family|lower == 'debian'
+ 
+- name: Set Jenkins JAVA_ARGS
+  lineinfile:
+    dest: /etc/sysconfig/jenkins
+    insertbefore: "^JENKINS_ARGS.*"
+    line: "JAVA_ARGS=\"-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false\""
+  register: jenkins_defaults
+  when: ansible_os_family|lower == 'redhat'
+
+- name: Create init.groovy.d directory
+  file: 
+     name: "{{jenkins_home}}/init.groovy.d"
+     state: directory
+
+- name: Create basic-security.groovy file
+  file:
+     path: "{{jenkins_home}}/init.groovy.d/basic-security.groovy"
+     state: touch
+
+- name: Configure default users
+  template:
+    src: basic-security.groovy.j2
+    dest: "{{ jenkins_home }}/init.groovy.d/basic-security.groovy"
+    owner: "{{ jenkins_process_user }}"
+    group: "{{ jenkins_process_group }}"
+    mode: 0775
+  register: jenkins_users_config
+ 
+- name: Restart jenkins service
+  service:
+     name: jenkins
+     state: restarted
+
+- name: Configure default users disable
+  template:
+    src: basic-security1.groovy.j2
+    dest: "{{ jenkins_home }}/init.groovy.d/basic-security.groovy"
+    owner: "{{ jenkins_process_user }}"
+    group: "{{ jenkins_process_group }}"
+    mode: 0775
+  register: jenkins_users_config
+
+- name: Restart jenkins service
+  service:
+     name: jenkins
+     state: restarted
+
+- name: Remove Jenkins security init scripts after first startup.
+  file:
+    path: "{{ jenkins_home }}/init.groovy.d/basic-security.groovy"
+    state: absent
+
+- name: Set HTTP port in Jenkins config.
+  lineinfile:
+    backrefs: true
+    dest: /etc/default/jenkins
+    regexp: '^HTTP_PORT='
+    line: 'HTTP_PORT={{ jenkins_http_port }}'
+  register: jenkins_http_config
+  when: ansible_os_family|lower == 'debian'
+
+- name: Set HTTP port in Jenkins config.
+  lineinfile:
+    backrefs: true
+    dest: /etc/sysconfig/jenkins
+    regexp: '^HTTP_PORT='
+    line: 'HTTP_PORT={{ jenkins_http_port }}'
+  register: jenkins_http_config
+  when: ansible_os_family|lower == 'redhat'
+
